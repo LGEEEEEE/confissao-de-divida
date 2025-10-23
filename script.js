@@ -18,8 +18,8 @@ function addHeader(doc) {
     }
 
     // --- Configurações do Logo (AJUSTE O TAMANHO AQUI) ---
-    const logoWidth = 50;  // Largura do logo em mm (ex: 50mm)
-    const logoHeight = 15; // Altura do logo em mm (ex: 15mm)
+    const logoWidth = 10;  // Largura do logo em mm (ex: 10mm)
+    const logoHeight = 10.5; // Altura do logo em mm (ex: 10.5mm)
     const y_top = 10;      // Margem do topo (ex: 10mm)
     // --- Fim das Configurações ---
 
