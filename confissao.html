@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Confissão de Dívida (v5-Simplificado)</title>
+    <title>Gerador de Confissão de Dívida (v6-com Negativo)</title>
     
     <script>
         // SCRIPT DE GUARDA DE AUTENTICAÇÃO
@@ -269,7 +269,6 @@
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 80px; gap: 10px; }
 
-        /* --- MODIFICADO: Renomeado de .grid-4-dinamico --- */
         .grid-contrato-dinamico { 
             display: grid;
             grid-template-columns: 1fr 1fr 30px; /* Banco, Parcela, Botão */
@@ -278,7 +277,6 @@
         }
         .grid-contrato-dinamico .form-group { margin-bottom: 0; }
         .grid-contrato-dinamico label, .grid-2 label, .grid-3 label { font-size: 0.8rem; }
-        /* --- FIM DA MODIFICAÇÃO --- */
 
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1090; }
         .toast {
@@ -487,9 +485,27 @@
                 <label for="valor-parcelas-unificadas">Valor final das parcelas unificadas:</label>
                 <input type="text" id="valor-parcelas-unificadas" placeholder="R$ 0,00" class="campo-moeda">
             </div>
+            
+            <div class="form-group">
+                <label for="tirou-negativo">Tirou o negativo?</label>
+                <select id="tirou-negativo">
+                    <option value="Não">Não</option>
+                    <option value="Sim">Sim</option>
+                </select>
+            </div>
+            <div id="negativo-container" style="display: none; padding-left: 15px; border-left: 3px solid #007bff; margin-bottom: 15px;">
+                <div class="form-group">
+                    <label for="valor-negativo">Valor do Negativo:</label>
+                    <input type="text" id="valor-negativo" placeholder="R$ 0,00" class="campo-moeda">
+                </div>
+                <div class="form-group">
+                    <label for="parcela-com-abatimento">Nova Parcela (Retirando Negativo):</label>
+                    <input type="text" id="parcela-com-abatimento" placeholder="R$ 0,00" class="campo-moeda" disabled>
+                </div>
+            </div>
             <div class="form-group">
                 <label for="prazo">Prazo (em vezes):</label>
-                <input type="text" id="prazo" value="96x">
+                <input type="text" id="prazo" placeholder="96 vezes">
             </div>
             
             <div class="form-group">
@@ -546,16 +562,23 @@
                     </tr>
                 </tbody>
             </table>
+
             <p class="paragrafo-no-indent">
                 Houve utilização de margem consignável? ( <span id="doc-margem-utilizada" class="variavel">[Sim/Não]</span> ) Se sim, qual o valor? <span id="doc-valor-margem" class="variavel">[Valor Margem]</span>
             </p>
             <p class="paragrafo">
                 Valor final das parcelas unificadas: <span id="doc-valor-parcelas-unificadas" class="variavel">[Valor Parcelas Unificadas]</span>
             </p>
+            
+            <p class="paragrafo" id="preview-valor-negativo" style="display: none;">
+                Valor do Negativo: <span id="doc-valor-negativo" class="variavel">R$ 0,00</span>
+            </p>
+            <p class="paragrafo" id="preview-parcela-abatimento" style="display: none;">
+                Nova Parcela (com abatimento): <span id="doc-parcela-com-abatimento" class="variavel">R$ 0,00</span>
+            </p>
             <p class="paragrafo">
                 Prazo: <span id="doc-prazo" class="variavel">[Prazo]</span>
             </p>
-
             <p class="paragrafo">
                 Saldo Devedor a ser Quitado: <span id="doc-saldo-devedor-quitado" class="variavel">[Saldo Devedor Quitado]</span>
             </p>
@@ -660,6 +683,33 @@
             document.getElementById('loading-overlay').style.display = 'none';
         }
 
+        // --- INÍCIO: NOVA FUNÇÃO DE CÁLCULO ---
+        function calcularAbatimento() {
+            const tirouNegativo = document.getElementById('tirou-negativo').value;
+            const vpuInput = document.getElementById('valor-parcelas-unificadas');
+            const vnInput = document.getElementById('valor-negativo');
+            const vpaInput = document.getElementById('parcela-com-abatimento'); // Parcela Com Abatimento
+
+            if (tirouNegativo === 'Sim') {
+                const valorUnificado = moedaParaFloat(vpuInput.value);
+                const valorNegativo = moedaParaFloat(vnInput.value);
+                
+                const valorFinal = valorUnificado - valorNegativo;
+                
+                // Define o valor no campo do formulário (formatado)
+                vpaInput.value = formatarMoeda(valorFinal);
+            } else {
+                // Se for "Não", limpa os campos
+                vnInput.value = "";
+                vpaInput.value = "";
+            }
+            
+            // Atualiza o preview (que vai cuidar de esconder/mostrar os campos)
+            atualizarPreview();
+        }
+        // --- FIM: NOVA FUNÇÃO DE CÁLCULO ---
+
+
         // --- FUNÇÃO ATUALIZAR PREVIEW (Simplificada) ---
         function atualizarPreview() {
             // Parte 1: Campos estáticos
@@ -672,8 +722,14 @@
                 'margem-utilizada': ['doc-margem-utilizada'],
                 'valor-margem': ['doc-valor-margem'],
                 'valor-parcelas-unificadas': ['doc-valor-parcelas-unificadas'],
+                
+                // --- ADICIONADO ---
+                'tirou-negativo': ['doc-tirou-negativo'], // (Ignorado, mas necessário para o loop)
+                'valor-negativo': ['doc-valor-negativo'],
+                'parcela-com-abatimento': ['doc-parcela-com-abatimento'],
+                // --- FIM ---
+
                 'prazo': ['doc-prazo'],
-                // 'saldo-devedor': ['doc-saldo-devedor'], // REMOVIDO
                 'valor-liquido': ['doc-valor-liquido'],
                 'valor-repassado': ['doc-valor-repassado'],
                 'local-data': ['doc-local-data'],
@@ -682,7 +738,11 @@
             };
             const camposMoeda = [
                 'valor-margem', 'valor-parcelas-unificadas', 
-                /* 'saldo-devedor', */ // REMOVIDO
+                
+                // --- ADICIONADO ---
+                'valor-negativo', 'parcela-com-abatimento',
+                // --- FIM ---
+
                 'valor-liquido', 'valor-repassado',
                 'saldo-devedor-quitado', 'valor-total-nova-instituicao' 
             ];
@@ -716,6 +776,21 @@
                 });
             }
             
+            // --- ADICIONADO: Lógica para esconder/mostrar campos no Preview ---
+            const tirouNegativoValor = document.getElementById('tirou-negativo').value;
+            const previewValorNegativo = document.getElementById('preview-valor-negativo');
+            const previewParcelaAbatimento = document.getElementById('preview-parcela-abatimento');
+
+            if (tirouNegativoValor === 'Sim') {
+                previewValorNegativo.style.display = 'block';
+                previewParcelaAbatimento.style.display = 'block';
+            } else {
+                previewValorNegativo.style.display = 'none';
+                previewParcelaAbatimento.style.display = 'none';
+            }
+            // --- FIM DA ADIÇÃO ---
+
+
             // Parte 2: Tabela de Contratos Dinâmicos (Simplificada)
             const tbody = document.getElementById('doc-contratos-tbody');
             const itemsContrato = document.querySelectorAll('.contrato-dinamico-item');
@@ -726,13 +801,12 @@
                 itemsContrato.forEach(item => {
                     const banco = item.querySelector('.campo-banco').value || '[Banco]';
                     let parcela = item.querySelector('.campo-parcela').value;
-                    // (Campos contrato e pagas removidos)
                     const parcelaFormatada = (parcela.trim() === "") ? '[Parcela]' : formatarMoeda(parcela);
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><span class="variavel">${banco}</span></td>
                         <td><span class="variavel">${parcelaFormatada}</span></td>
-                    `; // (Colunas removidas)
+                    `;
                     tbody.appendChild(tr);
                 });
             }
@@ -755,14 +829,12 @@
         // ### FUNÇÕES DE LEITURA DE PDF (Modal, Contratos, CEP, Leitores) ###
         // ##################################################################
         
-        // --- MODIFICADO: Função de Adicionar Linha (Simplificada) ---
-        function adicionarLinhaContrato(banco = '', parcela = '') { // Parâmetros removidos
+        function adicionarLinhaContrato(banco = '', parcela = '') { 
             const container = document.getElementById('contratos-dinamicos-container');
             const novoContratoDiv = document.createElement('div');
-            novoContratoDiv.className = 'grid-contrato-dinamico contrato-dinamico-item'; // Classe de grid atualizada
+            novoContratoDiv.className = 'grid-contrato-dinamico contrato-dinamico-item';
             const parcelaFormatada = (parcela === '' || parcela === 0) ? '' : formatarMoeda(parcela);
             
-            // HTML dos inputs simplificado
             novoContratoDiv.innerHTML = `
                 <div class="form-group">
                     <label>Banco:</label>
@@ -828,7 +900,6 @@
             loans.forEach((loan, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'form-check';
-                // --- MODIFICADO: Label do modal simplificada (opcional, mas bom) ---
                 const statusLabel = (loan.status && loan.status !== 'N/A') ? ` | Status: ${loan.status}` : '';
                 const contratoLabel = (loan.contrato && loan.contrato !== 'N/A') ? `Contrato: ${loan.contrato} | ` : '';
                 itemDiv.innerHTML = `
@@ -867,7 +938,6 @@
             }
         }
         
-        // --- MODIFICADO: Função de Aplicar (Simplificada) ---
         function applySelectedContracts() {
             const checkedBoxes = document.querySelectorAll('.loan-checkbox:checked');
             let contractsApplied = 0;
@@ -893,8 +963,11 @@
                 campoParcelasUnificadas.value = formatarMoeda(totalSomaParcelas);
             }
             
+            // --- ADICIONADO: Chama o cálculo de abatimento ---
+            calcularAbatimento();
+            // --- FIM DA ADIÇÃO ---
+            
             checkedBoxes.forEach((cb, index) => {
-                // Chamada simplificada (sem contrato e status)
                 adicionarLinhaContrato(
                     cb.dataset.banco,
                     parseFloat(cb.dataset.parcela)
@@ -945,8 +1018,8 @@
             }
         }
         
-        // --- (Todas as funções de processar PDF (Exercicio, SIAPE, SGP, Servidor) são coladas aqui) ---
-        // (Elas não precisam de mudança, pois a simplificação é feita em 'applySelectedContracts')
+        // --- (Funções de processar PDF - Exercicio, SIAPE, SGP, Servidor - Vêm aqui) ---
+        // (Elas são idênticas às da versão anterior, então estão compactadas para visualização)
         async function processarPdfExercicio(text) {
             let loansArray = [];
             let clienteObject = { nome: 'Não lido', cpf: 'Não lido', estado: '' };
@@ -1340,6 +1413,28 @@
             });
             document.getElementById('cep').addEventListener('blur', buscarCep);
             
+            // --- INÍCIO: NOVOS LISTENERS PARA O CÁLCULO ---
+            const negativoSelect = document.getElementById('tirou-negativo');
+            const negativoContainer = document.getElementById('negativo-container');
+            const valorNegativoInput = document.getElementById('valor-negativo');
+            const valorUnificadoInput = document.getElementById('valor-parcelas-unificadas');
+            
+            // Listener para mostrar/esconder o container do formulário
+            negativoSelect.addEventListener('change', () => {
+                if (negativoSelect.value === 'Sim') {
+                    negativoContainer.style.display = 'block';
+                } else {
+                    negativoContainer.style.display = 'none';
+                }
+                // Recalcula (para limpar os campos se for "Não")
+                calcularAbatimento();
+            });
+
+            // Listeners para recalcular quando os valores mudarem (ao sair do campo)
+            valorNegativoInput.addEventListener('blur', calcularAbatimento);
+            valorUnificadoInput.addEventListener('blur', calcularAbatimento);
+            // --- FIM: NOVOS LISTENERS ---
+            
             // Listener do botão Gerar PDF
             document.getElementById('gerar-pdf').addEventListener('click', gerarPdf);
         });
@@ -1359,7 +1454,6 @@
             atualizarPreview(); 
 
             const opt = {
-                // Margens originais: [15mm topo, 25mm lados, 30mm baixo]
                 margin: [15, 25, 30, 25], 
                 filename: filename,
                 image: { type: 'jpeg', quality: 0.98 }, 
@@ -1370,9 +1464,7 @@
                     scrollY: 0
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                // --- CORREÇÃO: Removida a quebra de página explícita ---
-                // Deixa o html2pdf fluir o conteúdo automaticamente
-                pagebreak: { mode: ['css', 'avoid-all'] } 
+                pagebreak: { mode: ['css', 'avoid-all'] } // Deixa fluir
             };
 
             documentoCompleto.classList.add('generating-pdf');
