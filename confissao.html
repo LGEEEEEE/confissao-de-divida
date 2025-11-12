@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Confissão de Dívida (v6-com Negativo)</title>
-    
+
     <script>
         // SCRIPT DE GUARDA DE AUTENTICAÇÃO
         if (localStorage.getItem('isAuthenticated') !== 'true') {
             alert("Acesso negado. Por favor, faça o login.");
-            window.location.replace('index.html'); 
+            window.location.replace('index.html');
         }
     </script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
         integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@latest/dist/tesseract.min.js'></script>
-    
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,8 +29,8 @@
             align-items: flex-start;
             gap: 30px;
             padding: 20px;
-            font-size: 14px; 
-            flex-wrap: wrap; 
+            font-size: 14px;
+            flex-wrap: wrap;
             justify-content: center;
         }
 
@@ -66,6 +67,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         #btn-logout:hover {
             background: #dc3545;
             color: #fff;
@@ -76,10 +78,12 @@
             border-bottom: 1px solid #eee;
             padding-bottom: 20px;
         }
+
         .form-section:last-of-type {
             border-bottom: none;
             padding-bottom: 0;
         }
+
         .form-section h2 {
             font-size: 1.1rem;
             color: #333;
@@ -91,6 +95,7 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .form-section h2 .btn-limpar {
             font-size: 0.8rem;
             font-weight: normal;
@@ -101,6 +106,7 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         .form-section h2 .btn-limpar:hover {
             background: #dc3545;
             color: #fff;
@@ -128,6 +134,7 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+
         .form-group input[type="text"]:disabled {
             background-color: #e9ecef;
         }
@@ -157,14 +164,14 @@
 
         /* --- ESTILOS DO PREVIEW (ATUALIZADOS) --- */
         #preview-container {
-            flex: 1; 
+            flex: 1;
             display: flex;
-            justify-content: center; 
-            min-width: 1mm; 
+            justify-content: center;
+            min-width: 1mm;
         }
 
         #documento-completo {
-            width: 158mm; 
+            width: 158mm;
             padding: 0;
             margin: 0;
             background: #ffffff;
@@ -175,7 +182,7 @@
             font-size: 10pt;
             line-height: 1.5;
         }
-        
+
         #documento-completo h3 {
             text-align: center;
             font-weight: bold;
@@ -185,13 +192,13 @@
         }
 
         #documento-completo p {
-            text-align: justify; 
-            margin-bottom: 15px; 
+            text-align: justify;
+            margin-bottom: 15px;
             text-indent: 50px;
-            word-wrap: break-word; 
+            word-wrap: break-word;
             page-break-inside: avoid !important;
         }
-        
+
         #documento-completo .no-indent {
             text-indent: 0;
         }
@@ -203,26 +210,27 @@
             margin-bottom: 10px;
             text-indent: 0;
             page-break-inside: avoid !important;
-            page-break-after: avoid !important; 
+            page-break-after: avoid !important;
         }
 
         #documento-completo .paragrafo {
             margin-left: 25px;
             text-indent: 0;
             text-align: justify;
-            margin-bottom: 15px; 
+            margin-bottom: 15px;
         }
+
         #documento-completo .paragrafo-no-indent {
             text-indent: 0;
             text-align: justify;
-            margin-bottom: 15px; 
+            margin-bottom: 15px;
         }
 
         #documento-completo .assinatura {
             text-align: center;
-            margin-top: 40px; 
+            margin-top: 40px;
             text-indent: 0;
-            page-break-inside: avoid !important; 
+            page-break-inside: avoid !important;
         }
 
         #documento-completo .data-local {
@@ -242,15 +250,16 @@
             color: #000;
             font-weight: normal;
         }
-        
+
         .preview-table {
             width: 100%;
             table-layout: fixed;
             border-collapse: collapse;
             margin-bottom: 15px;
             margin-top: 15px;
-            page-break-inside: avoid !important; 
+            page-break-inside: avoid !important;
         }
+
         .preview-table th,
         .preview-table td {
             border: 1px solid #000;
@@ -259,6 +268,7 @@
             white-space: normal;
             overflow-wrap: break-word;
         }
+
         .preview-table th {
             font-weight: bold;
             background-color: #f2f2f2;
@@ -266,99 +276,250 @@
 
 
         /* === CSS DO LEITOR DE PDF E COMPONENTES === */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 80px; gap: 10px; }
-
-        .grid-contrato-dinamico { 
+        .grid-2 {
             display: grid;
-            grid-template-columns: 1fr 1fr 30px; /* Banco, Parcela, Botão */
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 80px;
+            gap: 10px;
+        }
+
+        .grid-contrato-dinamico {
+            display: grid;
+            grid-template-columns: 1fr 1fr 30px;
+            /* Banco, Parcela, Botão */
             gap: 10px;
             align-items: flex-end;
         }
-        .grid-contrato-dinamico .form-group { margin-bottom: 0; }
-        .grid-contrato-dinamico label, .grid-2 label, .grid-3 label { font-size: 0.8rem; }
 
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1090; }
+        .grid-contrato-dinamico .form-group {
+            margin-bottom: 0;
+        }
+
+        .grid-contrato-dinamico label,
+        .grid-2 label,
+        .grid-3 label {
+            font-size: 0.8rem;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1090;
+        }
+
         .toast {
-            width: 350px; max-width: 90%; background-color: #333; color: white;
-            padding: 15px; border-radius: 5px; margin-bottom: 10px;
-            opacity: 0; transition: opacity 0.3s, transform 0.3s;
+            width: 350px;
+            max-width: 90%;
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
             transform: translateX(100%);
         }
-        .toast.show { opacity: 1; transform: translateX(0); }
-        .toast.bg-success { background-color: #198754; }
-        .toast.bg-danger { background-color: #dc3545; }
-        .toast.bg-warning { background-color: #ffc107; color: #000; }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.bg-success {
+            background-color: #198754;
+        }
+
+        .toast.bg-danger {
+            background-color: #dc3545;
+        }
+
+        .toast.bg-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
 
         .upload-area {
-            border: 2px dashed #007bff; padding: 20px; text-align: center;
-            cursor: pointer; background-color: #f8f9fa;
+            border: 2px dashed #007bff;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f8f9fa;
             transition: background-color 0.2s, border-color 0.2s;
-            border-radius: 8px; margin-bottom: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
         }
-        .upload-area.hover { background-color: #e9ecef; border-color: #0056b3; }
-        #pdf-upload { display: none; }
-        .upload-area span { font-weight: bold; color: #007bff; }
+
+        .upload-area.hover {
+            background-color: #e9ecef;
+            border-color: #0056b3;
+        }
+
+        #pdf-upload {
+            display: none;
+        }
+
+        .upload-area span {
+            font-weight: bold;
+            color: #007bff;
+        }
 
         #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); z-index: 2000;
-            display: none; justify-content: center; align-items: center;
-            flex-direction: column; color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
         }
+
         .spinner {
-            width: 40px; height: 40px; border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff; border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
         #contract-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); z-index: 1050;
-            display: none; justify-content: center; align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1050;
+            display: none;
+            justify-content: center;
+            align-items: center;
         }
+
         #contract-modal {
-            background: #fff; border-radius: 8px; width: 90%; max-width: 600px;
-            display: flex; flex-direction: column; max-height: 80vh;
+            background: #fff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            max-height: 80vh;
         }
-        #contract-modal-header { padding: 15px 20px; border-bottom: 1px solid #eee; }
-        #contract-modal-body { padding: 20px; overflow-y: auto; }
+
+        #contract-modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        #contract-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
         #modal-sum-container {
-            padding: 12px 15px; background: #f0f2f5; border: 1px solid #ddd;
-            border-radius: 4px; margin-top: 15px; font-size: 1.05rem;
-            text-align: center; display: none; font-weight: 500;
+            padding: 12px 15px;
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-size: 1.05rem;
+            text-align: center;
+            display: none;
+            font-weight: 500;
         }
-        #modal-sum-container strong { font-size: 1.1rem; color: #198754; }
+
+        #modal-sum-container strong {
+            font-size: 1.1rem;
+            color: #198754;
+        }
+
         #contract-list .form-check {
-            display: block; padding: 10px 12px;
-            border-bottom: 1px solid #f0f0f0; cursor: pointer;
+            display: block;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
         }
-        #contract-list .form-check:hover { background-color: #f8f9fa; }
-        #contract-list .form-check.select-all:hover { background-color: transparent; }
+
+        #contract-list .form-check:hover {
+            background-color: #f8f9fa;
+        }
+
+        #contract-list .form-check.select-all:hover {
+            background-color: transparent;
+        }
+
         #contract-modal-footer {
-            padding: 15px 20px; border-top: 1px solid #eee;
-            display: flex; justify-content: flex-end; gap: 10px;
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
+
         .modal-btn {
-            padding: 8px 15px; border: none; border-radius: 4px;
-            cursor: pointer; font-weight: bold;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
         }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
         #btn-add-contrato {
-            width: 100%; margin-top: 15px; padding: 10px;
-            background: #e6f7ff; border: 1px dashed #007bff;
-            color: #007bff; font-weight: bold; cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e6f7ff;
+            border: 1px dashed #007bff;
+            color: #007bff;
+            font-weight: bold;
+            cursor: pointer;
         }
+
         .btn-remover-contrato {
-            background: #dc3545; color: white; border: none;
-            width: 30px; height: 30px; border-radius: 4px;
-            cursor: pointer; font-weight: bold; display: flex;
-            align-items: center; justify-content: center; padding-bottom: 3px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 3px;
         }
-        
+
         /* Classe auxiliar do html2pdf.js */
         @media print,
         (min-width: 0px) {
@@ -368,12 +529,14 @@
                 padding: 0;
                 margin: 0;
             }
+
             .jsPDF-native-generating #form-container,
             .jsPDF-native-generating .toast-container,
             .jsPDF-native-generating #loading-overlay,
             .jsPDF-native-generating #contract-modal-overlay {
                 display: none;
             }
+
             .jsPDF-native-generating #preview-container {
                 flex: none;
                 justify-content: flex-start;
@@ -381,6 +544,7 @@
                 padding: 0;
                 min-width: 0;
             }
+
             .jsPDF-native-generating #documento-completo {
                 box-shadow: none;
                 margin: 0;
@@ -388,6 +552,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="toast-container" id="toast-container"></div>
@@ -445,7 +610,8 @@
             </div>
 
             <div class="grid-3">
-                <div class="form-group" style="grid-column: span 3;"><label for="cep">CEP (Digite e saia do campo para buscar):</label><input type="text" id="cep" placeholder="71.xxx-xxx">
+                <div class="form-group" style="grid-column: span 3;"><label for="cep">CEP (Digite e saia do campo para
+                        buscar):</label><input type="text" id="cep" placeholder="71.xxx-xxx">
                 </div>
             </div>
             <div class="form-group">
@@ -453,7 +619,7 @@
                 <input type="text" id="endereco" placeholder="Quadra ... CEP: 71.xxx-xxx – Brasília/DF">
             </div>
         </div>
-        
+
         <div class="form-section">
             <h2>Contratos a Quitar <button class="btn-limpar" id="limpar-contratos-btn">Limpar</button></h2>
             <input type="file" id="pdf-upload" accept=".pdf">
@@ -485,7 +651,7 @@
                 <label for="valor-parcelas-unificadas">Valor final das parcelas unificadas:</label>
                 <input type="text" id="valor-parcelas-unificadas" placeholder="R$ 0,00" class="campo-moeda">
             </div>
-            
+
             <div class="form-group">
                 <label for="tirou-negativo">Tirou o negativo?</label>
                 <select id="tirou-negativo">
@@ -493,7 +659,8 @@
                     <option value="Sim">Sim</option>
                 </select>
             </div>
-            <div id="negativo-container" style="display: none; padding-left: 15px; border-left: 3px solid #007bff; margin-bottom: 15px;">
+            <div id="negativo-container"
+                style="display: none; padding-left: 15px; border-left: 3px solid #007bff; margin-bottom: 15px;">
                 <div class="form-group">
                     <label for="valor-negativo">Valor do Negativo:</label>
                     <input type="text" id="valor-negativo" placeholder="R$ 0,00" class="campo-moeda">
@@ -507,7 +674,7 @@
                 <label for="prazo">Prazo (em vezes):</label>
                 <input type="text" id="prazo" placeholder="96 vezes">
             </div>
-            
+
             <div class="form-group">
                 <label for="saldo-devedor-quitado">Saldo Devedor a ser Quitado:</label>
                 <input type="text" id="saldo-devedor-quitado" placeholder="R$ 0,00" class="campo-moeda">
@@ -533,7 +700,7 @@
                 <input type="text" id="local-data" value="">
             </div>
         </div>
-        
+
         <button id="gerar-pdf">Gerar PDF</button>
     </div>
 
@@ -542,10 +709,17 @@
             <h3>TERMO DE CIÊNCIA, DE RESPONSABILIDADE E CONFISSÃO DE DÍVIDA</h3>
             <p>
                 Eu, <span id="doc-nome" class="variavel">[Nome]</span>, portador da cédula de identidade R.G.
-                nº <span id="doc-rg" class="variavel">[RG]</span>, brasileiro, inscrito no CPF nº <span id="doc-cpf" class="variavel">[CPF]</span>, residente e domiciliado na <span id="doc-endereco" class="variavel">[Endereço]</span>, vinculado ao órgão <span id="doc-orgao" class="variavel">[Órgão]</span>.
+                nº <span id="doc-rg" class="variavel">[RG]</span>, brasileiro, inscrito no CPF nº <span id="doc-cpf"
+                    class="variavel">[CPF]</span>, residente e domiciliado na <span id="doc-endereco"
+                    class="variavel">[Endereço]</span>, vinculado ao órgão <span id="doc-orgao"
+                    class="variavel">[Órgão]</span>.
             </p>
             <p>
-                DECLARO, para os devidos fins, que autorizo a empresa POLLO PROMOTORA LTDA, inscrita no CNPJ sob o nº 44.906.703/0001-59, com sede na CSE 06, Lote 30, Sala 204 – Taguatinga Sul – CEP: 72025-065 – Brasília/DF, e/ou ALIANCA SOLUCOES EM NEGOCIOS LTDA, inscrita no CNPJ sob o n° 50.113.116/0001-05, com sede na CSE 06, Lote 30, Sala 204 – Taguatinga Sul – CEP: 72025-065 – Brasília/DF, a realizar a quitação dos contratos consignados em meu contracheque, conforme descrito abaixo: A realizar a quitação do(s) contrato(s) de minha responsabilidade que estão consignados em meu holerite de pagamento conforme descrição abaixo:
+                Autorizo o Grupo Aliança Consignados, por meio de suas empresas vinculadas:
+                Pollo Promotora Ltda e Aliança Soluções em Negócios Ltda, inscritas no CNPJ sob os nºs
+                44.906.703/0001-59 e 50.113.116/0001-05, com sede na CSE 06, Lote 30, Sala 204 – Taguatinga Sul – CEP
+                72025-065 – Brasília/DF, a realizar a quitação dos contratos consignados em meu contracheque, conforme
+                descrito abaixo:
             </p>
             <p class="clausula">CLÁUSULA PRIMEIRA – DA OPERAÇÃO</p>
 
@@ -564,12 +738,15 @@
             </table>
 
             <p class="paragrafo-no-indent">
-                Houve utilização de margem consignável? ( <span id="doc-margem-utilizada" class="variavel">[Sim/Não]</span> ) Se sim, qual o valor? <span id="doc-valor-margem" class="variavel">[Valor Margem]</span>
+                Houve utilização de margem consignável? ( <span id="doc-margem-utilizada"
+                    class="variavel">[Sim/Não]</span> ) Se sim, qual o valor? <span id="doc-valor-margem"
+                    class="variavel">[Valor Margem]</span>
             </p>
             <p class="paragrafo">
-                Valor final das parcelas unificadas: <span id="doc-valor-parcelas-unificadas" class="variavel">[Valor Parcelas Unificadas]</span>
+                Valor final das parcelas unificadas: <span id="doc-valor-parcelas-unificadas" class="variavel">[Valor
+                    Parcelas Unificadas]</span>
             </p>
-            
+
             <p class="paragrafo" id="preview-valor-negativo" style="display: none;">
                 Valor do Negativo: <span id="doc-valor-negativo" class="variavel">R$ 0,00</span>
             </p>
@@ -580,57 +757,86 @@
                 Prazo: <span id="doc-prazo" class="variavel">[Prazo]</span>
             </p>
             <p class="paragrafo">
-                Saldo Devedor a ser Quitado: <span id="doc-saldo-devedor-quitado" class="variavel">[Saldo Devedor Quitado]</span>
+                Saldo Devedor a ser Quitado: <span id="doc-saldo-devedor-quitado" class="variavel">[Saldo Devedor
+                    Quitado]</span>
             </p>
             <p class="paragrafo">
-                Valor Total Aprox. Nova Instituição: <span id="doc-valor-total-nova-instituicao" class="variavel">[Valor Total Nova Instituição]</span>
+                Valor Total Aprox. Nova Instituição: <span id="doc-valor-total-nova-instituicao" class="variavel">[Valor
+                    Total Nova Instituição]</span>
             </p>
             <p class="clausula">CLÁUSULA SEGUNDA – DO PAGAMENTO</p>
             <p class="paragrafo">
-                2.1. Valor líquido a ser recebido pelo cliente: <span id="doc-valor-liquido" class="variavel">[Valor Líquido]</span>, acrescido do estorno da parcela.
+                2.1. Valor líquido a ser recebido pelo cliente: <span id="doc-valor-liquido" class="variavel">[Valor
+                    Líquido]</span>, acrescido do estorno da parcela.
             </p>
             <p class="paragrafo">
-                2.2. Valor total a ser repassado à empresa, referente à quitação do saldo devedor, comissão, impostos, seguro e juros: <span id="doc-valor-repassado" class="variavel">[Valor Repassado]</span>.
+                2.2. Valor total a ser repassado à empresa, referente à quitação do saldo devedor, comissão, impostos,
+                seguro e juros: <span id="doc-valor-repassado" class="variavel">[Valor Repassado]</span>.
             </p>
             <p class="paragrafo">
-                Parágrafo Único: Autorizo, desde já, que a empresa POLLO CONSIG e/ou ALIANÇA CONSIG atue como minha representante para digitação e pagamento das parcelas mencionadas, relativas à compra de dívida perante os bancos citados, com a transferência para o banco Bradesco S.A, observando que os valores podem variar de acordo com os juros e coeficientes do dia, mediante aprovação da operação.
+                Parágrafo Único: Autorizo, desde já, que a empresa POLLO CONSIG e/ou ALIANÇA CONSIG atue como minha
+                representante para digitação e pagamento das parcelas mencionadas, relativas à compra de dívida perante
+                os bancos citados, com a transferência para o banco Bradesco S.A, observando que os valores podem variar
+                de acordo com os juros e coeficientes do dia, mediante aprovação da operação.
             </p>
             <p class="clausula">CLÁUSULA TERCEIRA – DA ABERTURA DE CONTAS</p>
             <p class="paragrafo">
-                3.1 . Caixa Econômica Federal : A abertura de conta será realizada para fins de averbação da margem consignável, conforme liberação das parcelas pelos bancos. Esta conta será utilizada também para TED dos valores, garantindo segurança para a empresa intermediadora e para o cliente. O cliente deverá, ainda, assinar e reconhecer firma do documento da TED, que será emitido com os valores das transferências.
+                3.1 . Caixa Econômica Federal : A abertura de conta será realizada para fins de averbação da margem
+                consignável, conforme liberação das parcelas pelos bancos. Esta conta será utilizada também para TED dos
+                valores, garantindo segurança para a empresa intermediadora e para o cliente. O cliente deverá, ainda,
+                assinar e reconhecer firma do documento da TED, que será emitido com os valores das transferências.
             </p>
             <p class="paragrafo">
-                3.2. Bradesco S.A : A abertura de conta será exigida para aprovação e pagamento do contrato. O banco solicita a abertura para que todos os aceites sejam realizados via aplicativo.
+                3.2. Bradesco S.A : A abertura de conta será exigida para aprovação e pagamento do contrato. O banco
+                solicita a abertura para que todos os aceites sejam realizados via aplicativo.
             </p>
             <p class="paragrafo">
-                Parágrafo Único: Tenho ciência de que o banco pode levar de 7 (sete) a 10 (dez) dias para liberar a margem para averbação da proposta. Passado esse prazo, será feita cobrança ao banco. Autorizo o uso da minha senha do SOU GOV e do e-mail, exclusivamente para fins de consulta da margem consignável e eventuais autorizações, com a minha ciência.
+                Parágrafo Único: Tenho ciência de que o banco pode levar de 7 (sete) a 10 (dez) dias para liberar a
+                margem para averbação da proposta. Passado esse prazo, será feita cobrança ao banco. Autorizo o uso da
+                minha senha do SOU GOV e do e-mail, exclusivamente para fins de consulta da margem consignável e
+                eventuais autorizações, com a minha ciência.
             </p>
 
             <p class="paragrafo" style="text-indent: 0; margin-left: 0;">
-                Ciente das informações acima e do disposto no parágrafo único, no qual preciso fornecer a senha do SOU GOV e email, assino abaixo:
+                Ciente das informações acima e do disposto no parágrafo único, no qual preciso fornecer a senha do SOU
+                GOV e email, assino abaixo:
             </p>
             <p class="assinatura" style="margin-top: 60px;">
                 ASSINATURA DO DEVEDOR: _________________________________________
             </p>
             <p class="clausula">CLÁUSULA QUARTA – DAS CONDIÇÕES DA OPERAÇÃO</p>
             <p class="paragrafo">
-                4.1 . Declaro estar ciente de que, uma vez assinada esta transação, será realizada a quitação dos contratos indicados, não sendo possível o cancelamento ou desistência da operação junto à nova instituição financeira até sua completa finalização.
+                4.1 . Declaro estar ciente de que, uma vez assinada esta transação, será realizada a quitação dos
+                contratos indicados, não sendo possível o cancelamento ou desistência da operação junto à nova
+                instituição financeira até sua completa finalização.
             </p>
             <p class="clausula">CLÁUSULA QUINTA – DAS TESTEMUNHAS</p>
             <p class="paragrafo">
-                5.1. Para contratos de clientes com idade superior a 60 (sessenta) anos, conforme a Lei nº 14.423, de 22 de julho de 2022, será exigida a assinatura de uma testemunha de primeiro grau com vínculo familiar com o cliente.
+                5.1. Para contratos de clientes com idade superior a 60 (sessenta) anos, conforme a Lei nº 14.423, de 22
+                de julho de 2022, será exigida a assinatura de uma testemunha de primeiro grau com vínculo familiar com
+                o cliente.
             </p>
             <p class="paragrafo">
-                5.2. Na ausência de parente próximo ou caso o cliente opte por não contar com testemunha, será necessário o envio de um vídeo, no qual o cliente declare plena ciência do contrato e manifeste sua decisão de não ter testemunha. Esse vídeo deverá ser anexado à documentação da operação para fins de formalização.
+                5.2. Na ausência de parente próximo ou caso o cliente opte por não contar com testemunha, será
+                necessário o envio de um vídeo, no qual o cliente declare plena ciência do contrato e manifeste sua
+                decisão de não ter testemunha. Esse vídeo deverá ser anexado à documentação da operação para fins de
+                formalização.
             </p>
             <p class="paragrafo">
-                Parágrafo Único: Comprometo-me a não utilizar a margem consignável correspondente ao contrato quitado em outra consignatária, devendo a mesma permanecer disponível até a conclusão da operação e contratação do novo contrato, intermediado pela Aliança Consig de Seguros Ltda., na instituição financeira que oferecer a melhor condição disponível no dia ou conforme indicação da empresa, respeitando meu perfil de crédito. Essa conduta visa manter a boa-fé na negociação, conforme a legislação vigente.
+                Parágrafo Único: Comprometo-me a não utilizar a margem consignável correspondente ao contrato quitado em
+                outra consignatária, devendo a mesma permanecer disponível até a conclusão da operação e contratação do
+                novo contrato, intermediado pela Aliança Consig de Seguros Ltda., na instituição financeira que oferecer
+                a melhor condição disponível no dia ou conforme indicação da empresa, respeitando meu perfil de crédito.
+                Essa conduta visa manter a boa-fé na negociação, conforme a legislação vigente.
             </p>
             <p class="clausula">CLÁUSULA SEXTA – DA RESPONSABILIDADE CIVIL E PENAL</p>
             <p class="paragrafo">
-                6.1. Declaro ter pleno conhecimento do conteúdo deste instrumento. Em caso de uso indevido da margem liberada junto a outra instituição financeira, estarei sujeito à responsabilização por eventual crime, que poderá ser comunicado às autoridades competentes.
+                6.1. Declaro ter pleno conhecimento do conteúdo deste instrumento. Em caso de uso indevido da margem
+                liberada junto a outra instituição financeira, estarei sujeito à responsabilização por eventual crime,
+                que poderá ser comunicado às autoridades competentes.
             </p>
-            <p class="assinatura" style="margin-top: 60px;">ASSINATURA DO CREDOR: _________________________________________</p>
+            <p class="assinatura" style="margin-top: 60px;">ASSINATURA DO CREDOR:
+                _________________________________________</p>
             <p class="assinatura">ASSINATURA DO DEVEDOR: _______________________________________</p>
             <p class="assinatura">
                 TESTEMUNHA (Grau de Parentesco): __________________________
@@ -649,15 +855,15 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
 
         // --- FUNÇÕES UTILITÁRIAS ---
-        const formatarMoeda = (v) => { 
+        const formatarMoeda = (v) => {
             if (typeof v === 'string') {
-                if (v.startsWith('R$')) return v; 
-                v = moedaParaFloat(v); 
+                if (v.startsWith('R$')) return v;
+                v = moedaParaFloat(v);
             }
-            return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); 
+            return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         };
-        const moedaParaFloat = (v) => { 
-            return parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0; 
+        const moedaParaFloat = (v) => {
+            return parseFloat(String(v || '').replace('R$', '').trim().replace(/\./g, "").replace(",", ".")) || 0;
         };
         const showToast = (message, type = 'success') => {
             const toastContainer = document.getElementById('toast-container');
@@ -694,9 +900,9 @@
             if (tirouNegativo === 'Sim') {
                 const valorUnificado = moedaParaFloat(vpuInput.value);
                 const valorNegativo = moedaParaFloat(vnInput.value);
-                
+
                 const valorFinal = valorUnificado - valorNegativo;
-                
+
                 // Define o valor no campo do formulário (formatado)
                 vpaInput.value = formatarMoeda(valorFinal);
             } else {
@@ -704,7 +910,7 @@
                 vnInput.value = "";
                 vpaInput.value = "";
             }
-            
+
             // Atualiza o preview (que vai cuidar de esconder/mostrar os campos)
             atualizarPreview();
         }
@@ -715,7 +921,7 @@
         function atualizarPreview() {
             // Parte 1: Campos estáticos
             const campos = {
-                'nome': ['doc-nome'], 
+                'nome': ['doc-nome'],
                 'rg': ['doc-rg'],
                 'cpf': ['doc-cpf'],
                 'endereco': ['doc-endereco'],
@@ -723,7 +929,7 @@
                 'margem-utilizada': ['doc-margem-utilizada'],
                 'valor-margem': ['doc-valor-margem'],
                 'valor-parcelas-unificadas': ['doc-valor-parcelas-unificadas'],
-                
+
                 // --- ADICIONADO ---
                 'tirou-negativo': ['doc-tirou-negativo'], // (Ignorado, mas necessário para o loop)
                 'valor-negativo': ['doc-valor-negativo'],
@@ -738,23 +944,23 @@
                 'valor-total-nova-instituicao': ['doc-valor-total-nova-instituicao']
             };
             const camposMoeda = [
-                'valor-margem', 'valor-parcelas-unificadas', 
-                
+                'valor-margem', 'valor-parcelas-unificadas',
+
                 // --- ADICIONADO ---
                 'valor-negativo', 'parcela-com-abatimento',
                 // --- FIM ---
 
                 'valor-liquido', 'valor-repassado',
-                'saldo-devedor-quitado', 'valor-total-nova-instituicao' 
+                'saldo-devedor-quitado', 'valor-total-nova-instituicao'
             ];
             for (const formId in campos) {
                 const inputElement = document.getElementById(formId);
-                if (!inputElement) continue; 
+                if (!inputElement) continue;
                 const valor = inputElement.value;
-                const docIds = campos[formId]; 
+                const docIds = campos[formId];
                 docIds.forEach(docId => {
                     const el = document.getElementById(docId);
-                    if (!el) return; 
+                    if (!el) return;
                     let valorFinal = valor;
                     if (camposMoeda.includes(formId) && valor.trim() !== "") {
                         const valorNumerico = moedaParaFloat(valor);
@@ -763,12 +969,12 @@
                     if (valor.trim() === "") {
                         let placeholderText = inputElement.placeholder || '';
                         if (placeholderText === 'R$ 0,00') {
-                             valorFinal = 'R$ 0,00';
+                            valorFinal = 'R$ 0,00';
                         } else if (!placeholderText.startsWith('R$')) {
-                             valorFinal = el.getAttribute('data-placeholder') || el.textContent; 
-                             if (!el.getAttribute('data-placeholder')) {
-                                el.setAttribute('data-placeholder', valorFinal); 
-                             }
+                            valorFinal = el.getAttribute('data-placeholder') || el.textContent;
+                            if (!el.getAttribute('data-placeholder')) {
+                                el.setAttribute('data-placeholder', valorFinal);
+                            }
                         } else {
                             valorFinal = placeholderText;
                         }
@@ -776,7 +982,7 @@
                     el.textContent = valorFinal;
                 });
             }
-            
+
             // --- ADICIONADO: Lógica para esconder/mostrar campos no Preview ---
             const tirouNegativoValor = document.getElementById('tirou-negativo').value;
             const previewValorNegativo = document.getElementById('preview-valor-negativo');
@@ -795,7 +1001,7 @@
             // Parte 2: Tabela de Contratos Dinâmicos (Simplificada)
             const tbody = document.getElementById('doc-contratos-tbody');
             const itemsContrato = document.querySelectorAll('.contrato-dinamico-item');
-            tbody.innerHTML = ''; 
+            tbody.innerHTML = '';
             if (itemsContrato.length === 0) {
                 tbody.innerHTML = '<tr class="placeholder-row"><td colspan="2">Nenhum contrato adicionado</td></tr>';
             } else {
@@ -821,21 +1027,21 @@
             const ano = hoje.getFullYear();
             const dataFormatada = `Brasília/DF, ${dia} de ${mesNome} de ${ano}`;
             const campoData = document.getElementById('local-data');
-            if (campoData.value === "") { 
-                 campoData.value = dataFormatada;
+            if (campoData.value === "") {
+                campoData.value = dataFormatada;
             }
         }
 
         // ##################################################################
         // ### FUNÇÕES DE LEITURA DE PDF (Modal, Contratos, CEP, Leitores) ###
         // ##################################################################
-        
-        function adicionarLinhaContrato(banco = '', parcela = '') { 
+
+        function adicionarLinhaContrato(banco = '', parcela = '') {
             const container = document.getElementById('contratos-dinamicos-container');
             const novoContratoDiv = document.createElement('div');
             novoContratoDiv.className = 'grid-contrato-dinamico contrato-dinamico-item';
             const parcelaFormatada = (parcela === '' || parcela === 0) ? '' : formatarMoeda(parcela);
-            
+
             novoContratoDiv.innerHTML = `
                 <div class="form-group">
                     <label>Banco:</label>
@@ -856,11 +1062,11 @@
                 if (this.value.trim() !== "") {
                     const valorNumerico = moedaParaFloat(this.value);
                     this.value = formatarMoeda(valorNumerico);
-                    atualizarPreview(); 
+                    atualizarPreview();
                 }
             });
         }
-        
+
         function atualizarSomaModal() {
             const container = document.getElementById('contract-list');
             const sumContainer = document.getElementById('modal-sum-container');
@@ -882,7 +1088,7 @@
         function showContractModal(loans, cliente) {
             const listaDiv = document.getElementById('contract-list');
             const infoClienteDiv = document.getElementById('infoClienteModal');
-            listaDiv.innerHTML = ''; 
+            listaDiv.innerHTML = '';
             if (cliente.nome || cliente.cpf) {
                 document.getElementById('modal-nome-cliente').textContent = cliente.nome || 'Não lido';
                 document.getElementById('modal-cpf-cliente').textContent = cliente.cpf || 'Não lido';
@@ -929,7 +1135,7 @@
                 atualizarSomaModal();
             });
             document.getElementById('contract-modal-overlay').style.display = 'flex';
-            atualizarSomaModal(); 
+            atualizarSomaModal();
         }
         function hideContractModal() {
             document.getElementById('contract-modal-overlay').style.display = 'none';
@@ -938,7 +1144,7 @@
                 listaDiv.parentNode.replaceChild(listaDiv.cloneNode(true), listaDiv);
             }
         }
-        
+
         function applySelectedContracts() {
             const checkedBoxes = document.querySelectorAll('.loan-checkbox:checked');
             let contractsApplied = 0;
@@ -963,11 +1169,11 @@
                 const campoParcelasUnificadas = document.getElementById('valor-parcelas-unificadas');
                 campoParcelasUnificadas.value = formatarMoeda(totalSomaParcelas);
             }
-            
+
             // --- ADICIONADO: Chama o cálculo de abatimento ---
             calcularAbatimento();
             // --- FIM DA ADIÇÃO ---
-            
+
             checkedBoxes.forEach((cb, index) => {
                 adicionarLinhaContrato(
                     cb.dataset.banco,
@@ -993,7 +1199,7 @@
         async function buscarCep() {
             const cepInput = document.getElementById('cep');
             const enderecoInput = document.getElementById('endereco');
-            let cep = cepInput.value.replace(/\D/g, ''); 
+            let cep = cepInput.value.replace(/\D/g, '');
             if (cep.length !== 8) return;
             enderecoInput.value = "Buscando...";
             try {
@@ -1006,7 +1212,7 @@
                     return;
                 }
                 let enderecoCompleto = [data.logradouro, data.bairro, `${data.localidade}/${data.uf}`]
-                                        .filter(Boolean).join(', '); 
+                    .filter(Boolean).join(', ');
                 enderecoInput.value = `${enderecoCompleto} - CEP: ${data.cep}`;
                 showToast("Endereço preenchido!", "success");
                 enderecoInput.focus();
@@ -1018,7 +1224,7 @@
                 atualizarPreview();
             }
         }
-        
+
         // --- (Funções de processar PDF - Exercicio, SIAPE, SGP, Servidor - Vêm aqui) ---
         // (Elas são idênticas às da versão anterior, então estão compactadas para visualização)
         async function processarPdfExercicio(text) {
@@ -1027,7 +1233,7 @@
             let clienteCpfPDF = '';
             let clienteNomePDF = '';
             let cleanText = text.replace(/--- FIM DA PÁGINA \d+ ---/g, '')
-                .replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '') 
+                .replace(/Consignatária\n\s*▴\s*▾[\s\S]+?Situação\n\s*▴\s*▾/g, '')
                 .replace(/Consignatária Nº Serviço Inclusão Vir.prest. Virfolha Nº Pagas Situação/g, '');
             const isOcrText = cleanText.includes('O74-SABEMI-') || cleanText.includes('R$834/12') || cleanText.includes('R$74046');
             if (isOcrText) {
@@ -1103,7 +1309,7 @@
                 const infoMatchAntonio = text.match(infoRegexAntonio);
                 if (infoMatchAntonio) {
                     console.log("Regex SIAPE (Layout Antonio) detectado.");
-                    infoMatchNovo = [null, infoMatchAntonio[1], infoMatchAntonio[3]]; 
+                    infoMatchNovo = [null, infoMatchAntonio[1], infoMatchAntonio[3]];
                 }
             }
             if (infoMatchNovo && infoMatchNovo[1] && infoMatchNovo[2]) {
@@ -1130,7 +1336,7 @@
                 let cleanNomeBanco = nomeBanco.replace(/^\d+\s*-\s*/, '').replace('EMPREST BCO PRIVADOS - ', '').replace('EMPREST BCO OFICIAL - ', '').replace('EMPREST BCO PRIVADOS ', '').replace('EMPREST PREV PRIVADA - ', '').trim();
                 const [pagas, total] = parcelasStr.split('/');
                 const valorParcelaNum = moedaParaFloat(valor);
-                if (parseInt(total, 10) > 900) return; 
+                if (parseInt(total, 10) > 900) return;
                 loansFound.push({ banco: cleanNomeBanco, parcelaNum: valorParcelaNum, status: `${pagas.trim()} de ${total.trim()}`, contrato: numContrato.trim() });
             });
             if (loansFound.length === 0) {
@@ -1178,32 +1384,32 @@
             } else {
                 console.warn("Regex (Nome/Função) A falhou. Tentando Fallback B...");
                 const nomeMatchFallback = text.match(/NOME DO BENEFICIÁRIO DE PENSÃO(?:.|\n)+?([A-ZÀ-Ú ]{3,}\s[A-ZÀ-Ú ]{3,})/);
-                if(nomeMatchFallback) cliente.nome = nomeMatchFallback[1].trim();
+                if (nomeMatchFallback) cliente.nome = nomeMatchFallback[1].trim();
             }
             const cpfMatch = text.match(/\n00\s*\n\s*(\d{11})\s*\n\s*\d{3}-/);
-             if (cpfMatch && cpfMatch[1]) {
+            if (cpfMatch && cpfMatch[1]) {
                 cliente.cpf = cpfMatch[1].trim();
                 console.log("Regex (CPF) A funcionou!", cliente.cpf);
             } else {
                 console.warn("Regex (CPF) A falhou. Tentando Fallback B...");
-                 const cpfMatchFallback = text.match(/CPF(?:.|\n)+?(\d{11})/);
-                 if(cpfMatchFallback) cliente.cpf = cpfMatchFallback[1].trim();
+                const cpfMatchFallback = text.match(/CPF(?:.|\n)+?(\d{11})/);
+                if (cpfMatchFallback) cliente.cpf = cpfMatchFallback[1].trim();
             }
             const orgaoMatch = text.match(/([A-ZÀ-Ú ]+)\s+COMPROVANTE DE RENDIMENTOS DE BENEFICIÁRIO DE PENSÃO/);
             if (orgaoMatch && orgaoMatch[1]) {
-                cliente.orgao = orgaoMatch[1].trim(); 
+                cliente.orgao = orgaoMatch[1].trim();
                 console.log("Regex (Órgão) A funcionou!", cliente.orgao);
             } else { console.warn("Regex (Órgão) A falhou."); }
-            const ufMatch = text.match(/UPAG\/([A-Z]{2})/); 
+            const ufMatch = text.match(/UPAG\/([A-Z]{2})/);
             if (ufMatch && ufMatch[1]) {
                 cliente.estado = ufMatch[1].trim();
             } else { console.warn("Regex (UF) falhou no Contracheque"); }
             const descontosRegex = /(?:(\d{3})\s*\n\s*)?([\d.,]+)\s*\n\s*((?:EMPREST|AMORT)[^\n]+)/g;
             let matches = [...text.matchAll(descontosRegex)];
             if (matches.length === 0) {
-                 console.log("Regex de Desconto A falhou. Tentando Fallback (B)...");
-                 const descontosRegexFallback = /(?:(\d{3})\s+)?([\d.,]+)\s+((?:EMPREST|AMORT)[^\n]+)/g;
-                 matches = [...text.matchAll(descontosRegexFallback)];
+                console.log("Regex de Desconto A falhou. Tentando Fallback (B)...");
+                const descontosRegexFallback = /(?:(\d{3})\s+)?([\d.,]+)\s+((?:EMPREST|AMORT)[^\n]+)/g;
+                matches = [...text.matchAll(descontosRegexFallback)];
             }
             console.log(`Contracheque (Pensionista): Encontrados ${matches.length} descontos.`);
             matches.forEach((match) => {
@@ -1212,7 +1418,7 @@
                 const nomeBanco = match[3].trim();
                 const valorParcelaNum = moedaParaFloat(valorStr);
                 if (valorParcelaNum > 5.00) {
-                     loansArray.push({ banco: nomeBanco, parcelaNum: valorParcelaNum, status: `Prazo: ${prazo}`, contrato: 'N/A' });
+                    loansArray.push({ banco: nomeBanco, parcelaNum: valorParcelaNum, status: `Prazo: ${prazo}`, contrato: 'N/A' });
                 }
             });
             return { loans: loansArray, cliente: cliente };
@@ -1224,14 +1430,14 @@
             const nomeCargoMatch = text.match(/\n([A-ZÀ-Ú ]+)\s*\n\s*(\d{7,9})\s*\n\s*(\d{7,9})\s*\n\s*([A-ZÀ-Ú -]+)\s*\n\s*[A-Z]\s*\n\s*[A-Z]/);
             if (nomeCargoMatch) {
                 cliente.nome = nomeCargoMatch[1].trim();
-                cliente.profissao = nomeCargoMatch[4].trim().replace(/\s+/g, ' '); 
+                cliente.profissao = nomeCargoMatch[4].trim().replace(/\s+/g, ' ');
                 console.log("Regex (Servidor Nome/Profissao) A funcionou!", cliente.nome, cliente.profissao);
             } else {
                 console.warn("Regex (Servidor Nome/Profissao) A falhou. Tentando Fallbacks...");
                 const nomeMatchFallback = text.match(/NOME DO SERVIDOR(?:.|\n)+?([A-ZÀ-Ú ]{3,}\s[A-ZÀ-Ú ]{3,})/);
-                if(nomeMatchFallback) cliente.nome = nomeMatchFallback[1].trim();
+                if (nomeMatchFallback) cliente.nome = nomeMatchFallback[1].trim();
                 const cargoMatchFallback = text.match(/CARGO\/EMPREGO(?:.|\n)+?([A-ZÀ-Ú -]+)\s*\n\s*[A-Z]\s*\n\s*[A-Z]\s+/);
-                if(cargoMatchFallback) cliente.profissao = cargoMatchFallback[1].trim().replace(/\s+/g, ' ');
+                if (cargoMatchFallback) cliente.profissao = cargoMatchFallback[1].trim().replace(/\s+/g, ' ');
             }
             const cpfMatch = text.match(/CPF\s*\n\s*(\d{11})/);
             if (cpfMatch && cpfMatch[1]) {
@@ -1239,14 +1445,14 @@
                 console.log("Regex (Servidor CPF) A funcionou!", cliente.cpf);
             } else {
                 console.warn("Regex (Servidor CPF) A falhou. Tentando Fallback B...");
-                 const cpfMatchFallbackB = text.match(/\n(\d{11})\s*\n\s*(\d{3})\s*\n\s*(\d{6})\s+/); 
-                 if(cpfMatchFallbackB) {
-                     cliente.cpf = cpfMatchFallbackB[1].trim();
-                 } else {
+                const cpfMatchFallbackB = text.match(/\n(\d{11})\s*\n\s*(\d{3})\s*\n\s*(\d{6})\s+/);
+                if (cpfMatchFallbackB) {
+                    cliente.cpf = cpfMatchFallbackB[1].trim();
+                } else {
                     console.warn("Regex (Servidor CPF) B falhou. Tentando Fallback C...");
-                    const cpfMatchFallbackC = text.match(/\n00\s*\n\s*00\s*\n\s*(\d{11})/); 
-                    if(cpfMatchFallbackC) cliente.cpf = cpfMatchFallbackC[1].trim();
-                 }
+                    const cpfMatchFallbackC = text.match(/\n00\s*\n\s*00\s*\n\s*(\d{11})/);
+                    if (cpfMatchFallbackC) cliente.cpf = cpfMatchFallbackC[1].trim();
+                }
             }
             const orgaoMatch = text.match(/([A-ZÀ-Ú .]+)\s*\n\s*NORMAL\s*\n\s*(?:JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ) \d{4}/);
             if (orgaoMatch && orgaoMatch[1]) {
@@ -1261,9 +1467,9 @@
             const descontosRegex = /(?:(\d{3})\s*\n\s*)?([\d.,]+)\s*\n\s*((?:EMPREST|AMORT)[^\n]+)/g;
             let matches = [...text.matchAll(descontosRegex)];
             if (matches.length === 0) {
-                 console.log("Regex de Desconto A falhou. Tentando Fallback (B)...");
-                 const descontosRegexFallback = /(?:(\d{3})\s+)?([\d.,]+)\s+((?:EMPREST|AMORT)[^\n]+)/g;
-                 matches = [...text.matchAll(descontosRegexFallback)];
+                console.log("Regex de Desconto A falhou. Tentando Fallback (B)...");
+                const descontosRegexFallback = /(?:(\d{3})\s+)?([\d.,]+)\s+((?:EMPREST|AMORT)[^\n]+)/g;
+                matches = [...text.matchAll(descontosRegexFallback)];
             }
             console.log(`Contracheque (Servidor): Encontrados ${matches.length} descontos.`);
             matches.forEach((match) => {
@@ -1272,12 +1478,12 @@
                 const nomeBanco = match[3].trim();
                 const valorParcelaNum = moedaParaFloat(valorStr);
                 if (valorParcelaNum > 5.00) {
-                     loansArray.push({ banco: nomeBanco.replace(/\s+/g, ' '), parcelaNum: valorParcelaNum, status: `Prazo: ${prazo}`, contrato: 'N/A' });
+                    loansArray.push({ banco: nomeBanco.replace(/\s+/g, ' '), parcelaNum: valorParcelaNum, status: `Prazo: ${prazo}`, contrato: 'N/A' });
                 }
             });
             return { loans: loansArray, cliente: cliente };
         }
-        
+
         async function parsearPdf(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1288,7 +1494,7 @@
             fileReader.onload = async function () {
                 let extractedText = '';
                 let result = { loans: [], cliente: { nome: '', cpf: '', estado: '', profissao: '', orgao: '' } };
-                window.ultimoClientePDF = {}; 
+                window.ultimoClientePDF = {};
                 try {
                     const typedarray = new Uint8Array(this.result);
                     const pdf = await pdfjsLib.getDocument(typedarray).promise;
@@ -1324,7 +1530,7 @@
                         await worker.terminate();
                         console.log("OCR Concluído.");
                     }
-                    
+
                     if (extractedText.includes("DE BENEFICIÁRIO DE PENSÃO")) {
                         console.log("Detectado: Contracheque PENSIONISTA (SGP/SIGEPE)");
                         result = await processarPdfContrachequeSGP(extractedText);
@@ -1338,10 +1544,10 @@
                         console.log("Detectado: Extrato Exército (Padrão)");
                         result = await processarPdfExercicio(extractedText);
                     }
-                    
-                    window.ultimoClientePDF = result.cliente; 
+
+                    window.ultimoClientePDF = result.cliente;
                     showToast("Documento lido e convênio detectado!", "success");
-                    showContractModal(result.loans, result.cliente); 
+                    showContractModal(result.loans, result.cliente);
                 } catch (error) {
                     console.error("Erro ao processar o PDF:", error);
                     showToast(`Erro ao ler o PDF: ${error.message}`, "danger");
@@ -1351,24 +1557,24 @@
             };
             fileReader.readAsArrayBuffer(file);
         }
-        
+
         // ##################################################################
         // ### FIM - FUNÇÕES DE LEITURA DE PDF ###
         // ##################################################################
-        
+
 
         // --- INICIALIZAÇÃO E EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
             setarDataAtual();
-            atualizarPreview(); 
+            atualizarPreview();
 
             document.querySelectorAll('#form-container input, #form-container select').forEach(input => {
                 input.addEventListener('input', atualizarPreview);
                 if (input.classList.contains('campo-moeda')) {
-                    input.addEventListener('blur', function() {
+                    input.addEventListener('blur', function () {
                         if (this.value.trim() !== "") {
                             const valorNumerico = moedaParaFloat(this.value);
-                            this.value = formatarMoeda(valorNumerico); 
+                            this.value = formatarMoeda(valorNumerico);
                             atualizarPreview();
                         }
                     });
@@ -1391,7 +1597,7 @@
             document.getElementById("pdf-upload").addEventListener("change", parsearPdf);
             document.getElementById('limpar-contratos-btn').addEventListener('click', () => {
                 limparCamposContrato();
-                atualizarPreview(); 
+                atualizarPreview();
                 showToast("Campos de contrato limpos.", "success");
             });
             document.getElementById('modal-cancel-btn').addEventListener('click', hideContractModal);
@@ -1403,23 +1609,23 @@
             document.getElementById('contratos-dinamicos-container').addEventListener('click', function (e) {
                 if (e.target && e.target.classList.contains('btn-remover-contrato')) {
                     e.target.closest('.contrato-dinamico-item').remove();
-                    atualizarPreview(); 
+                    atualizarPreview();
                 }
             });
             document.getElementById('btn-logout').addEventListener('click', () => {
                 if (confirm("Você tem certeza que deseja sair?")) {
                     localStorage.removeItem('isAuthenticated');
-                    window.location.replace('index.html'); 
+                    window.location.replace('index.html');
                 }
             });
             document.getElementById('cep').addEventListener('blur', buscarCep);
-            
+
             // --- INÍCIO: NOVOS LISTENERS PARA O CÁLCULO ---
             const negativoSelect = document.getElementById('tirou-negativo');
             const negativoContainer = document.getElementById('negativo-container');
             const valorNegativoInput = document.getElementById('valor-negativo');
             const valorUnificadoInput = document.getElementById('valor-parcelas-unificadas');
-            
+
             // Listener para mostrar/esconder o container do formulário
             negativoSelect.addEventListener('change', () => {
                 if (negativoSelect.value === 'Sim') {
@@ -1435,7 +1641,7 @@
             valorNegativoInput.addEventListener('blur', calcularAbatimento);
             valorUnificadoInput.addEventListener('blur', calcularAbatimento);
             // --- FIM: NOVOS LISTENERS ---
-            
+
             // Listener do botão Gerar PDF
             document.getElementById('gerar-pdf').addEventListener('click', gerarPdf);
         });
@@ -1452,14 +1658,14 @@
             const filename = `${nomePessoa.trim().replace(/\s+/g, '_')}_confissao_de_divida.pdf`;
 
             const documentoCompleto = document.getElementById('documento-completo');
-            atualizarPreview(); 
+            atualizarPreview();
 
             const opt = {
-                margin: [15, 25, 30, 25], 
+                margin: [15, 25, 30, 25],
                 filename: filename,
-                image: { type: 'jpeg', quality: 0.98 }, 
+                image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
-                    scale: 2, 
+                    scale: 2,
                     useCORS: true,
                     scrollX: 0,
                     scrollY: 0
@@ -1486,8 +1692,9 @@
                         botao.textContent = 'Gerar PDF';
                         botao.disabled = false;
                     });
-            }, 150); 
+            }, 150);
         }
     </script>
 </body>
+
 </html>
