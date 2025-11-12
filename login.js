@@ -21,7 +21,8 @@ document.getElementById('loginForm').addEventListener('submit', async function (
         "equipe@andressa.com",
         "equipe@alessandra.com",
         "equipe@junior.com",
-        "equipe@michelle.com"
+        "equipe@michelle.com",
+        "equipe@fenix.com"
     ];
     
     // A senha está correta (o hash para "123456")
